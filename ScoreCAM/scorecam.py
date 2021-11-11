@@ -47,12 +47,14 @@ class ScoreCAM(object):
               
               if saliency_map.max() != saliency_map.min():
                   norm_saliency_map = (saliency_map - saliency_map.min()) / (saliency_map.max() - saliency_map.min())
-                  
-              output = self.model(input * norm_saliency_map)
-              output = F.softmax(output, dim=1).squeeze()
+                 
+              output1 = self.model(input * norm_saliency_map)
+              output2 = self.model(torch.zeros((1,3,ht,wt)).to(device))
+              output = F.softmax(output1-output2, dim=1).squeeze()
               alpha = output[imgClass]
-
-              fused_saliency_map +=  alpha * saliency_map
+              
+              
+              fused_saliency_map +=  (alpha) * saliency_map
                 
         fused_saliency_map = F.relu(fused_saliency_map)
 

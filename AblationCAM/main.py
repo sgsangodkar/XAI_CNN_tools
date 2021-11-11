@@ -24,7 +24,7 @@ imgTransform = transforms.Compose([
             transforms.Normalize(mean, std)
         ])
 
-pathImg = 'images/ILSVRC2012_val_00000073.JPEG'
+pathImg = '../images/ILSVRC2012_val_00000073.JPEG'
 
 device = torch.device('cuda') if torch.cuda.is_available() else 'cpu'
 
