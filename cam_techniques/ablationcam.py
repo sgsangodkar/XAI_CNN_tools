@@ -69,7 +69,10 @@ class AblationCAM(nn.Module):
             alpha = logits[0,imgClass]-logitsNew[0,imgClass]
             alpha /= logits[0,imgClass]
             fused_saliency_map += alpha*saliency_map
+            
         fused_saliency_map = F.relu(fused_saliency_map)
             
+        if fused_saliency_map.max() != fused_saliency_map.min():
+            fused_saliency_map = (fused_saliency_map - fused_saliency_map.min())/(fused_saliency_map.max() - fused_saliency_map.min())
         
-        return fused_saliency_map, imgClass
+        return fused_saliency_map[0,0,:,:], imgClass

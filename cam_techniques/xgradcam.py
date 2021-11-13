@@ -59,8 +59,11 @@ class XGradCAM(nn.Module):
             
 
             fused_saliency_map += alpha*activation_map
-        fused_saliency_map = F.relu(fused_saliency_map)
             
         fused_saliency_map = F.interpolate(fused_saliency_map, size=(ht,wt), mode='bilinear', align_corners=False)
+        fused_saliency_map = F.relu(fused_saliency_map)
+
+        if fused_saliency_map.max() != fused_saliency_map.min():
+            fused_saliency_map = (fused_saliency_map - fused_saliency_map.min())/(fused_saliency_map.max() - fused_saliency_map.min())
         
-        return fused_saliency_map.detach(), imgClass
+        return fused_saliency_map[0,0,:,:].detach(), imgClass

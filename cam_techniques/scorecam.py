@@ -40,7 +40,6 @@ class ScoreCAM(object):
 
         with torch.no_grad():
           for i in range(C):
-
               # upsampling
               saliency_map = activations[:, i:i+1, :, :]
               saliency_map = F.interpolate(saliency_map, size=(ht, wt), mode='bilinear', align_corners=False)
@@ -61,4 +60,4 @@ class ScoreCAM(object):
         if fused_saliency_map.max() != fused_saliency_map.min():
             fused_saliency_map = (fused_saliency_map - fused_saliency_map.min())/(fused_saliency_map.max() - fused_saliency_map.min())
 
-        return fused_saliency_map, imgClass
+        return fused_saliency_map[0,0,:,:], imgClass

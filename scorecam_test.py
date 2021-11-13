@@ -10,8 +10,11 @@ import torch
 import torchvision.models as models
 import matplotlib.pyplot as plt
 import torchvision.transforms as transforms
+import time
+import numpy as np
 
-from scorecam import ScoreCAM
+from utils import visualize
+from cam_techniques import ScoreCAM
 
 from PIL import Image
 
@@ -25,7 +28,7 @@ imgTransform = transforms.Compose([
         ])
 
 
-pathImg = '../images/ILSVRC2012_val_00000073.JPEG'
+pathImg = 'images/ILSVRC2012_val_00000073.JPEG'
 
 device = torch.device('cuda') if torch.cuda.is_available() else 'cpu'
 
@@ -34,22 +37,16 @@ layer = vgg.features[29]
 
 scorecamVGG = ScoreCAM(vgg, layer)
 
+
 imgPIL = Image.open(pathImg)
 img = imgTransform(imgPIL).unsqueeze(0)
-    
+
+since = time.time()  
 scorecamMap, prediction = scorecamVGG(img.to(device))
-
-plt.imshow(scorecamMap[0].squeeze().cpu())
-plt.show()
-
-plt.imshow(imgPIL)
-plt.show()
-
-print(prediction)
+print(f'Time taken {time.time()-since}')
 
 
-
-
+visualize(np.array(imgPIL), scorecamMap.cpu().numpy(), save_path='scorecam_op.png')
 
 
 
