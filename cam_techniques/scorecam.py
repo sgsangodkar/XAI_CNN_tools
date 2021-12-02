@@ -36,6 +36,7 @@ class ScoreCAM(object):
 
         activations = self.activations['activations']
         _, C, u, v = activations.shape
+        #print(u,v)
         fused_saliency_map= torch.zeros((1,1,ht,wt)).to(device)
 
         with torch.no_grad():
@@ -45,9 +46,9 @@ class ScoreCAM(object):
               saliency_map = F.interpolate(saliency_map, size=(ht, wt), mode='bilinear', align_corners=False)
               
               if saliency_map.max() != saliency_map.min():
-                  norm_saliency_map = (saliency_map - saliency_map.min()) / (saliency_map.max() - saliency_map.min())
+                  saliency_map = (saliency_map - saliency_map.min()) / (saliency_map.max() - saliency_map.min())
                  
-              output1 = self.model(input * norm_saliency_map)
+              output1 = self.model(input * saliency_map)
               output2 = self.model(torch.zeros((1,3,ht,wt)).to(device))
               output = F.softmax(output1-output2, dim=1).squeeze()
               alpha = output[imgClass]
@@ -60,4 +61,4 @@ class ScoreCAM(object):
         if fused_saliency_map.max() != fused_saliency_map.min():
             fused_saliency_map = (fused_saliency_map - fused_saliency_map.min())/(fused_saliency_map.max() - fused_saliency_map.min())
 
-        return fused_saliency_map[0,0,:,:], imgClass
+        return fused_saliency_map[0,0,:,:], logits

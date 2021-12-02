@@ -34,7 +34,7 @@ class XGradCAM(nn.Module):
     def forward(self, x, classid=None):
         _, _, ht, wt = x.shape
         
-        logits = self.model(x)
+        logits = self.model(x).squeeze()
             
         activations = self.activations
         
@@ -43,7 +43,7 @@ class XGradCAM(nn.Module):
         else:
             imgClass = torch.argmax(logits)
             
-        logits[0,imgClass].backward()
+        logits[imgClass].backward()
         
         gradients = self.gradients[0]
         
@@ -66,4 +66,4 @@ class XGradCAM(nn.Module):
         if fused_saliency_map.max() != fused_saliency_map.min():
             fused_saliency_map = (fused_saliency_map - fused_saliency_map.min())/(fused_saliency_map.max() - fused_saliency_map.min())
         
-        return fused_saliency_map[0,0,:,:].detach(), imgClass
+        return fused_saliency_map[0,0,:,:].detach(), logits

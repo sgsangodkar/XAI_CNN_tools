@@ -26,7 +26,8 @@ class ScoreCAM(object):
         self.layer.register_forward_hook(forward_hook)
         
     def __call__(self, input, classid=None):
-        logits = self.model(input).squeeze()
+        with torch.no_grad():
+            logits = self.model(input).squeeze()
         _, _, ht, wt = input.shape
         
         if classid:

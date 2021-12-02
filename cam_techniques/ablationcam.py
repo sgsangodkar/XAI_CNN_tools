@@ -46,7 +46,7 @@ class AblationCAM(nn.Module):
     def forward(self, x, classid=None):
         _, _, ht, wt = x.shape
         with torch.no_grad():
-            logits = self.model(x)
+            logits = self.model(x).squeeze()
             
         activations = self.activations
         
@@ -65,9 +65,9 @@ class AblationCAM(nn.Module):
             activationsNew = activations.clone()
             activationsNew[:,i,:,:] = 0
             with torch.no_grad():
-                logitsNew = self.headModel(activationsNew)
-            alpha = logits[0,imgClass]-logitsNew[0,imgClass]
-            alpha /= logits[0,imgClass]
+                logitsNew = self.headModel(activationsNew).squeeze()
+            alpha = logits[imgClass]-logitsNew[imgClass]
+            alpha /= logits[imgClass]
             fused_saliency_map += alpha*saliency_map
             
         fused_saliency_map = F.relu(fused_saliency_map)
@@ -75,4 +75,4 @@ class AblationCAM(nn.Module):
         if fused_saliency_map.max() != fused_saliency_map.min():
             fused_saliency_map = (fused_saliency_map - fused_saliency_map.min())/(fused_saliency_map.max() - fused_saliency_map.min())
         
-        return fused_saliency_map[0,0,:,:], imgClass
+        return fused_saliency_map[0,0,:,:], logits

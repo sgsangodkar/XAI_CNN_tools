@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Nov 10 18:55:58 2021
+Created on Thu Nov 30 18:34:11 2021
 
 @author: sagar
 """
@@ -16,7 +16,7 @@ import time
 import os
 
 from utils import visualize, visualize_multiscale, map_class
-from cam_techniques import XGradCAM
+from cam_techniques import IG
 
 imagenet_class_file = 'misc/map_clsloc.txt'
 model_class_file = 'misc/imagenet1000_clsidx_to_labels.txt'
@@ -31,14 +31,7 @@ imgTransform = transforms.Compose([
         ])
 
 
-pathImgs = ['/mnt/nas/share/sagar/XAI/val_categorised/590/ILSVRC2012_val_00006215.JPEG',
-           '/mnt/nas/share/sagar/XAI/val_categorised/591/ILSVRC2012_val_00006227.JPEG',
-           '/mnt/nas/share/sagar/XAI/val_categorised/596/ILSVRC2012_val_00004802.JPEG',
-           '/mnt/nas/share/sagar/XAI/val_categorised/667/ILSVRC2012_val_00009855.JPEG',
-           '/mnt/nas/share/sagar/XAI/val_categorised/689/ILSVRC2012_val_00019027.JPEG',
-           '/mnt/nas/share/sagar/XAI/val_categorised/764/ILSVRC2012_val_00011982.JPEG',
-           '/mnt/nas/share/sagar/XAI/val_categorised/887/ILSVRC2012_val_00001805.JPEG',
-           '/mnt/nas/share/sagar/XAI/val_categorised/1000/ILSVRC2012_val_00004949.JPEG']
+pathImgs = ['/mnt/nas/share/sagar/XAI/val_categorised/590/ILSVRC2012_val_00006215.JPEG']
 
 
 device = torch.device('cuda') if torch.cuda.is_available() else 'cpu'
@@ -46,7 +39,7 @@ device = torch.device('cuda') if torch.cuda.is_available() else 'cpu'
 vgg = models.vgg16(pretrained=True).eval().to(device)
 layer = vgg.features[29]
 
-xgradcamVGG = XGradCAM(vgg, layer)
+igVGG = IG(vgg, layer)
 
 for pathImg in pathImgs:
     model_classid, class_name = map_class(int(pathImg.split('/')[-2]), imagenet_class_file, model_class_file)
@@ -56,13 +49,13 @@ for pathImg in pathImgs:
     LRimg = imgTransform(LRimgPIL).to(device).unsqueeze(0)
     
     since = time.time()
-    xgradcamMap, _ = xgradcamVGG(img.to(device))
-    LRxgradcamMap, _ = xgradcamVGG(LRimg.to(device))
+    igMap, _ = igVGG(img.to(device))
+    LRigMap, _ = igVGG(LRimg.to(device))
     
     if not os.path.exists(os.path.join('outputs', class_name)):
         os.makedirs(os.path.join('outputs',class_name))
         
     save_path = os.path.join('outputs', class_name, 'xgrad_'+pathImg.split('/')[-1])    
-    visualize_multiscale(imgPIL, LRimgPIL, xgradcamMap.cpu(), LRxgradcamMap.cpu(), save_path)
+    visualize_multiscale(imgPIL, LRimgPIL, igVGG.cpu(), LRigMap.cpu(), save_path)
     
 print(f'Time taken {time.time()-since}')
