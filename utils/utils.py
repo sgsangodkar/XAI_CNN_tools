@@ -173,3 +173,4 @@ def map_class(imagenet_class, imagenet_class_file, model_class_file):
     model_class_id = dest_classnames.index(model_class_name)
     
     return model_class_id, model_class_name
+

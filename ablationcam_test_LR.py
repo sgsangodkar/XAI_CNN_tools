@@ -63,7 +63,8 @@ for pathImg in pathImgs:
     if not os.path.exists(os.path.join('outputs', class_name)):
         os.makedirs(os.path.join('outputs',class_name))
         
-    save_path = os.path.join('outputs', class_name, 'ablation_'+pathImg.split('/')[-1])    
+    save_path = os.path.join('outputs', class_name, 'ablation_'+pathImg.split('/')[-1]) 
+    print(ablationcamMap.shape)
     visualize_multiscale(imgPIL, LRimgPIL, ablationcamMap.cpu(), LRablationcamMap.cpu(), save_path)
     
 print(f'Time taken {time.time()-since}')

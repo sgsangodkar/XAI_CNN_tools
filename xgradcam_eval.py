@@ -21,7 +21,7 @@ from utils import map_class, MetricsMeter, get_explanation_map
 
 
 EVALUATE_LR = True
-EVALUATE_ALL = True # Flag. Evaluate only on correct predictions if False 
+EVALUATE_ALL = False # Flag. Evaluate only on correct predictions if False 
 
 datasetPath = '/mnt/nas/share/sagar/XAI/val_categorised'
 imagenet_class_file = 'misc/map_clsloc.txt'
@@ -60,7 +60,7 @@ for classid in classIDs if classIDs!=-1 else os.listdir(datasetPath):
             imgPIL = Image.open(pathImg)
             
             if EVALUATE_LR:
-                imgPIL = transforms.Resize(50)(imgPIL)
+                imgPIL = transforms.Resize(100)(imgPIL)
                 
             if len(np.array(imgPIL).shape) == 3:
                 img = imgTransform(imgPIL).unsqueeze(0).to(device)
