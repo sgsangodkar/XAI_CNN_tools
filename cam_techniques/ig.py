@@ -2,15 +2,15 @@
 
 import torch
 import torch.nn.functional as F
+from torch.autograd import grad
 
 device = torch.device('cuda') if torch.cuda.is_available() else 'cpu'
 
 class IG(object):
-    def __init__(self, model, layer, steps=30, batch_size=16):
+    def __init__(self, model, layer, steps=32):
         self.model = model
         self.layer = layer
         self.steps = steps
-        self.batch_size = batch_size
         
         
         
@@ -23,28 +23,25 @@ class IG(object):
         else:
             imgClass = torch.argmax(logits)
                   
-        
-        x_b = torch.zeros(x.shape).to(device)
-       
-        
-        alpha = torch.arange(0,self.steps).to(device) + 1
-        
-        images = alpha[:,None,None,None]*x
-        images += x_b.expand_as(images)
-        
-        gradients = []
-        for image in images:
-            inp = image.unsqueeze(0)
-            inp.requires_grad = True
-            logits = self.model(inp)
-            self.model.zero_grad()
-            logits[0,imgClass].backward()
-            gradients.append(inp.grad.data)
             
-        #gradients/=self.steps
-        #gradients*=(x-x_b)
         
-        return gradients
+        #alpha = torch.arange(0,self.steps).to(device) + 1
+        alpha = torch.linspace(0,1,self.steps+1)[1:].to(device)
+        x_b = torch.zeros(x.shape).to(device)
+        images = alpha[:,None,None,None]*(x-x_b)
+        images += x_b.expand_as(images)
+        images.requires_grad_()
+        
+        logits = self.model(images)
+        grads = grad(outputs=logits[:,imgClass].unbind(), inputs=images)
+        
+        output = grads[0].sum(dim=0, keepdim=True)
+        
+        output = (x-x_b)*output/self.steps
+        
+
+        
+        return F.relu(output[0].permute(1,2,0)).mean(2)
         
         
         
