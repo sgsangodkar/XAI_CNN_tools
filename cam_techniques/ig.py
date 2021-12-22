@@ -35,13 +35,15 @@ class IG(object):
         logits = self.model(images)
         grads = grad(outputs=logits[:,imgClass].unbind(), inputs=images)
         
-        output = grads[0].sum(dim=0, keepdim=True)
+        output = grads[0].mean(dim=0, keepdim=True)
         
-        output = (x-x_b)*output/self.steps
+        output = (x-x_b)*output[0]
+        
+        output = output.mean(dim=0)
         
 
         
-        return F.relu(output[0].permute(1,2,0)).mean(2)
+        return F.relu(output)
         
         
         
